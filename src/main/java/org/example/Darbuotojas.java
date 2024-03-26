@@ -23,6 +23,16 @@ public class Darbuotojas {
         this.projektasId = projektasId;
     }
 
+    public Darbuotojas(String vardas, String pavarde) {
+        this.vardas = vardas;
+        this.pavarde = pavarde;
+    }
+
+    @Override
+    public String toString() {
+        return vardas + " " + pavarde + "\n";
+    }
+
     public String getAsmenskodas() {
         return asmenskodas;
     }

@@ -2,6 +2,7 @@ package org.example;
 
 import java.sql.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
 
 public class Main {
     public static void main(String[] args) throws SQLException {
@@ -11,11 +12,11 @@ public class Main {
         try (Connection connection = DriverManager.getConnection(
                 "jdbc:mysql://localhost:3306/imone",
                 "root",
-                "******"
+                "*******"
         )) {
 
             getAllDarbuotojas(connection);
-            getDarbuotojasByProjektas(connection);
+            getAllProjektaiWithDarbuotojai(connection);
 
             connection.setAutoCommit(false);
             try {
@@ -45,26 +46,36 @@ public class Main {
 
     }
 
-    public static void getDarbuotojasByProjektas(Connection conn) {
+    public static void getAllProjektaiWithDarbuotojai(Connection conn)  {
         ResultSet rs;
         try (Statement state = conn.createStatement()) {
             rs = state.executeQuery("select * from projektas");
             while (rs.next()) {
-                System.out.printf("%n=%s=%n", rs.getString("Pavadinimas"));
+                Projektas projektas = new Projektas(rs.getInt("ID"), rs.getString("Pavadinimas"), new ArrayList<>());
+                System.out.printf("%n=%s=%n", projektas.getPavadinimas());
+                getDarbuotojasByProjektas(conn, projektas);
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
 
-                PreparedStatement prep = conn.prepareStatement("select * from darbuotojas where projektas_id=?;");
-                prep.setInt(1, rs.getInt("ID"));
-                ResultSet inRs = prep.executeQuery();
-                int rowNum = 1;
-                while (inRs.next()) {
-                    System.out.printf("%d. %s %s%n", rowNum++, inRs.getString("vardas"), inRs.getString("pavarde"));
-                }
+    public static void getDarbuotojasByProjektas(Connection conn, Projektas projektas) {
+        ResultSet inRs;
+        try (PreparedStatement prep = conn.prepareStatement("SELECT * from darbuotojas WHERE projektas_id=?;")) {
+            prep.setInt(1, projektas.getId());
+            inRs = prep.executeQuery();
+            int rowNum = 1;
+            while (inRs.next()) {
+                projektas.getDarbuotojuSarasas().addLast(new Darbuotojas(inRs.getString("vardas"), inRs.getString("pavarde")));
+                System.out.printf("%d. %s", rowNum++, projektas.getDarbuotojuSarasas().getLast());
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
 
     }
+
 
     public static void insertDarbuotjas(Connection conn, Darbuotojas darbuotojas) throws SQLException {
         try (PreparedStatement prep = conn.prepareStatement("INSERT INTO darbuotojas VALUES (?, ?, ?, ?, ?, ?, ?, ?);")) {
@@ -82,7 +93,7 @@ public class Main {
         }
     }
 
-    public static void updateDarbuotojoProjektas(Connection conn, int naujasProjektas, String asmenskodas) throws SQLException {
+    public static void updateDarbuotojoProjektas(Connection conn, int naujasProjektas, String asmenskodas) {
         try (PreparedStatement prep = conn.prepareStatement("UPDATE darbuotojas SET projektas_id = ? WHERE asmenskodas=?;")) {
             prep.setInt(1, naujasProjektas);
             prep.setString(2, asmenskodas);
