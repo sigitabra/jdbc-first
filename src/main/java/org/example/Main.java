@@ -11,7 +11,7 @@ public class Main {
         try (Connection connection = DriverManager.getConnection(
                 "jdbc:mysql://localhost:3306/imone",
                 "root",
-                "SBmysql87"
+                "******"
         )) {
 
             getAllDarbuotojas(connection);
