@@ -11,15 +11,16 @@ public class Main {
         try (Connection connection = DriverManager.getConnection(
                 "jdbc:mysql://localhost:3306/imone",
                 "root",
-                "*******"
+                "SBmysql87"
         )) {
 
             getAllDarbuotojas(connection);
             getDarbuotojasByProjektas(connection);
-            updateDarbuotojoProjektas(connection, 2, "48709141175");
+
             connection.setAutoCommit(false);
             try {
                 insertDarbuotjas(connection, insertDarbuotjas);
+                updateDarbuotojoProjektas(connection, 2, "48709141175");
                 connection.commit();
             } catch (Exception e) {
                 System.out.println(e.getMessage());
@@ -77,18 +78,16 @@ public class Main {
             prep.setInt(8, darbuotojas.getProjektasId());
             prep.execute();
         } catch (Exception e) {
-            conn.rollback();
             System.out.println(e.getMessage());
         }
     }
 
     public static void updateDarbuotojoProjektas(Connection conn, int naujasProjektas, String asmenskodas) throws SQLException {
-        try (PreparedStatement prep = conn.prepareStatement("UPDATE darbuotojas SET pojektas_id = ? WHERE asmenskodas=?;")) {
+        try (PreparedStatement prep = conn.prepareStatement("UPDATE darbuotojas SET projektas_id = ? WHERE asmenskodas=?;")) {
             prep.setInt(1, naujasProjektas);
             prep.setString(2, asmenskodas);
             prep.execute();
         } catch (Exception e) {
-            conn.rollback();
             System.out.println(e.getMessage());
         }
     }
