@@ -1,6 +1,8 @@
 package org.example;
 
+import java.sql.*;
 import java.time.LocalDate;
+import java.util.Objects;
 
 public class Darbuotojas {
     private String asmenskodas;
@@ -21,6 +23,68 @@ public class Darbuotojas {
         this.pareigos = pareigos;
         this.skyriusPavadinimas = skyriusPavadinimas;
         this.projektasId = projektasId;
+    }
+
+    public Darbuotojas(String vardas, String pavarde) {
+        this.vardas = vardas;
+        this.pavarde = pavarde;
+    }
+
+    public Darbuotojas(String asmenskodas) {
+        this.asmenskodas = asmenskodas;
+    }
+
+    public static void insertDarbuotjas(Connection conn, Darbuotojas darbuotojas) throws SQLException {
+        conn.setAutoCommit(false);
+        try (PreparedStatement prep = conn.prepareStatement("INSERT INTO darbuotojas VALUES (?, ?, ?, ?, ?, ?, ?, ?);")) {
+            prep.setString(1, darbuotojas.getAsmenskodas());
+            prep.setString(2, darbuotojas.getVardas());
+            prep.setString(3, darbuotojas.getPavarde());
+            prep.setDate(4, Date.valueOf(darbuotojas.getDirbanuo()));
+            prep.setDate(5, Date.valueOf(darbuotojas.getGimimometai()));
+            prep.setString(6, darbuotojas.getPareigos());
+            prep.setString(7, darbuotojas.getSkyriusPavadinimas());
+            prep.setInt(8, darbuotojas.getProjektasId());
+            prep.execute();
+            conn.commit();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            conn.rollback();
+        } finally {
+            conn.setAutoCommit(true);
+        }
+    }
+
+    public static void updateDarbuotojoProjektas(Connection conn, int naujasProjektas, String asmenskodas) throws SQLException {
+        conn.setAutoCommit(false);
+        try (PreparedStatement prep = conn.prepareStatement("UPDATE darbuotojas SET projektas_id = ? WHERE asmenskodas=?;")) {
+            prep.setInt(1, naujasProjektas);
+            prep.setString(2, asmenskodas);
+            prep.execute();
+            conn.commit();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            conn.rollback();
+        } finally {
+            conn.setAutoCommit(true);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return vardas + " " + pavarde + "\n";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Darbuotojas that)) return false;
+        return Objects.equals(getAsmenskodas(), that.getAsmenskodas());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getAsmenskodas());
     }
 
     public String getAsmenskodas() {
